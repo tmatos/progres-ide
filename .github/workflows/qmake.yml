@@ -19,9 +19,9 @@ jobs:
         source: false
         documentation: false
         examples: false
-    - name: Go to build dir
-      run: mkdir -p build && cd build
+    - name: Create build dir
+      run: pwd && mkdir -p build
     - name: qmake
-      run: qmake ../IDE.pro
+      run: cd build && qmake ../IDE.pro
     - name: make
-      run: make
+      run: cd build && make
