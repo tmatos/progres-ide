@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/qrc">
+        <file>icons/new.svg</file>
+        <file>icons/paste.svg</file>
+        <file>icons/copy.svg</file>
+        <file>icons/cut.svg</file>
+        <file>icons/settings.svg</file>
+        <file>icons/redo.svg</file>
+        <file>icons/undo.svg</file>
+        <file>icons/help.svg</file>
+        <file>icons/start.svg</file>
+        <file>icons/close.svg</file>
+        <file>icons/exit.svg</file>
+        <file>icons/save.svg</file>
+        <file>icons/open.svg</file>
+        <file>icons/star.svg</file>
+        <file>pt-BR.qm</file>
+    </qresource>
+</RCC>
