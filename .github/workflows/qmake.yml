@@ -22,6 +22,6 @@ jobs:
     - name: Go to build dir
       run: mkdir -p build && cd build
     - name: qmake
-      run: qmake ..
+      run: qmake ../IDE.pro
     - name: make
       run: make
