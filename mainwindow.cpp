@@ -29,23 +29,19 @@ MainWindow::MainWindow(QWidget *parent) :
                                  tr("Please, select the simulator program in the next screen."));
 
         QString simPath = QFileDialog::getOpenFileName(this, tr("Select the simulator program"), "", tr("Executable files (*)"));
-        if(!simPath.isEmpty())
-        {
+        if(!simPath.isEmpty()) {
             config->setValue("simulator", simPath);
         }
     }
 
-    if(config->contains("recents/show"))
-    {
-        if(config->value("recents/show").toBool())
-        {
+    if(config->contains("recents/show")) {
+        if(config->value("recents/show").toBool()) {
             QStringList recentsList = config->value("recents/list").toStringList();
             auto maxRecentFiles = config->value("recents/max").toInt();
             updateRecentFilesList(recentsList, maxRecentFiles);
         }
     }
-    else
-    {
+    else {
         QStringList empty;
         config->setValue("recents/show", true);
         config->setValue("recents/max", 10);
@@ -89,8 +85,7 @@ void MainWindow::on_clearRecentFilesMenu()
 void MainWindow::openRecentFile()
 {
     QAction* action = qobject_cast<QAction*>(sender());
-    if(action)
-    {
+    if(action) {
         openVerilogFile(action->data().toString());
     }
 }
@@ -99,8 +94,9 @@ void MainWindow::findText(const QString &txt)
 {
     QPlainTextEdit *edt = (QPlainTextEdit*)ui->tabFiles->currentWidget();
 
-    if(edt)
+    if(edt) {
         edt->find(txt);
+    }
 }
 
 void MainWindow::newVerilogFile()
@@ -121,7 +117,7 @@ void MainWindow::newVerilogFile()
     fs.modified = true;
     fileStatusList.append(fs);
 
-    VerilogHighlighter* hlg = new VerilogHighlighter(fileEdit->document());
+    VerilogHighlighter *hlg = new VerilogHighlighter(fileEdit->document());
     Q_UNUSED(hlg);
 }
 
@@ -129,8 +125,7 @@ void MainWindow::openVerilogFileDialog()
 {
     QString filePath;
     filePath = QFileDialog::getOpenFileName(this, tr("Open Verilog Code"), "", tr("Verilog files (*.v)"));
-    if(!filePath.isEmpty())
-    {
+    if(!filePath.isEmpty()) {
         openVerilogFile(filePath);
     }
 }
@@ -149,8 +144,7 @@ void MainWindow::openVerilogFile(QString filePath)
         {
             QStringList recentsList = config->value("recents/list").toStringList();
             auto maxRecentFiles = config->value("recents/max").toInt();
-            if(recentsList.count() >= maxRecentFiles)
-            {
+            if(recentsList.count() >= maxRecentFiles) {
                 recentsList.removeAt(0);
             }
 
@@ -163,7 +157,7 @@ void MainWindow::openVerilogFile(QString filePath)
             updateRecentFilesList(recentsList, maxRecentFiles);
         }
 
-        QPlainTextEdit* fileEdit = new QPlainTextEdit(0);
+        QPlainTextEdit *fileEdit = new QPlainTextEdit(0);
 
         QFont codeFont("Monospace");
         codeFont.setStyleHint(QFont::TypeWriter);
@@ -176,7 +170,7 @@ void MainWindow::openVerilogFile(QString filePath)
         QString code = QString::fromUtf8(file.readAll());
         fileEdit->setPlainText(code);
 
-        VerilogHighlighter* hlg = new VerilogHighlighter(fileEdit->document());
+        VerilogHighlighter *hlg = new VerilogHighlighter(fileEdit->document());
         Q_UNUSED(hlg);
 
         FileStatus fs;
@@ -184,8 +178,7 @@ void MainWindow::openVerilogFile(QString filePath)
         fs.path = filePath;
         fileStatusList.append(fs);
     }
-    else
-    {
+    else {
         ui->consoleEdit->appendPlainText(tr("Error loading file. Not found."));
     }
 }
@@ -226,11 +219,11 @@ void MainWindow::simulationStart()
 {
     unsigned int n = ui->tabFiles->count();
 
-    if(!n)
+    if(!n) {
         return;
+    }
 
-    if(config->value("simulator").toString().isEmpty())
-    {
+    if(config->value("simulator").toString().isEmpty()) {
         QMessageBox::warning(this, tr("Simulator not set"), tr("The path to the simulator executable is not set."));
         showSettingsDialog();
         return;
@@ -261,8 +254,7 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
 
     FileStatus fs = fileStatusList[index];
 
-    if(fs.modified)
-    {
+    if(fs.modified) {
         QMessageBox box;
         box.setWindowTitle(tr("File modified"));
         box.setText(tr("Save?"));
@@ -271,13 +263,11 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
 
         auto response = box.exec();
 
-        if(response == QMessageBox::Save)
-        {
+        if(response == QMessageBox::Save) {
             // TODO
         }
-        else if(response == QMessageBox::Cancel)
-        {
-          // TODO
+        else if(response == QMessageBox::Cancel) {
+            return;
         }
 
         // TODO: discard
@@ -285,7 +275,8 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
 
     fileStatusList.removeAt(index);
 
-    delete ui->tabFiles->widget(index);
+    //delete ui->tabFiles->widget(index); // this line makes an error to occur!
+
     // TODO delete highlighter
 
     ui->tabFiles->removeTab(index);
@@ -303,8 +294,7 @@ void MainWindow::on_actionSelect_All_triggered()
 
 void MainWindow::on_actionFind_triggered()
 {
-    if (!findDialog)
-    {
+    if (!findDialog) {
         findDialog = new FindDialog(this);
     }
 
@@ -317,6 +307,7 @@ void MainWindow::on_actionClose_triggered()
 {
     auto index = ui->tabFiles->currentIndex();
 
-    if(index >= 0)
+    if(index >= 0) {
         on_tabFiles_tabCloseRequested(index);
+    }
 }
