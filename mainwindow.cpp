@@ -101,7 +101,7 @@ void MainWindow::findText(const QString &txt)
 
 void MainWindow::newVerilogFile()
 {
-    auto n = ui->tabFiles->count();
+    auto lastTabIndex = ui->tabFiles->count();
 
     QPlainTextEdit *fileEdit = new QPlainTextEdit(0);
 
@@ -109,9 +109,10 @@ void MainWindow::newVerilogFile()
     codeFont.setStyleHint(QFont::TypeWriter);
     fileEdit->setFont(codeFont);
 
-    QString title(tr("new_circuit_") + QString::number(n) + ".v");
+    QString title(tr("new_circuit_") + QString::number(newVerilogFileCount) + ".v");
+    newVerilogFileCount++;
     ui->tabFiles->addTab(fileEdit, title);
-    ui->tabFiles->setCurrentIndex(n);
+    ui->tabFiles->setCurrentIndex(lastTabIndex);
 
     FileStatus fs;
     fs.modified = true;

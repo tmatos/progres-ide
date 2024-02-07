@@ -50,6 +50,8 @@ private:
     int maxRecentFiles = 10;
     QList<QAction> recentFilesActionList;
 
+    unsigned int newVerilogFileCount = 0;
+
     struct FileStatus
     {
         FileStatus()
