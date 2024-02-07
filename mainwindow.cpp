@@ -103,7 +103,7 @@ void MainWindow::newVerilogFile()
 {
     auto n = ui->tabFiles->count();
 
-    QPlainTextEdit* fileEdit = new QPlainTextEdit(0);
+    QPlainTextEdit *fileEdit = new QPlainTextEdit(0);
 
     QFont codeFont("Monospace");
     codeFont.setStyleHint(QFont::TypeWriter);
@@ -275,11 +275,9 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
 
     fileStatusList.removeAt(index);
 
-    //delete ui->tabFiles->widget(index); // this line makes an error to occur!
+    // TODO: delete highlighter
 
-    // TODO delete highlighter
-
-    ui->tabFiles->removeTab(index);
+    delete ui->tabFiles->widget(index); // NOTE: removeTab() doesn't free memory
 }
 
 void MainWindow::on_tabFiles_tabBarClicked(int index)
