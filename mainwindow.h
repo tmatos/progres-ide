@@ -23,8 +23,6 @@ public:
 protected slots:
     void newVerilogFile();
     void openVerilogFileDialog();
-    void saveVerilogFileDialog();
-    void saveVerilogFileAsDialog();
     void showSettingsDialog();
     void showAboutDialog();
     void exitApp();
@@ -35,6 +33,9 @@ private slots:
     void on_tabFiles_tabCloseRequested(int index);
     void on_tabFiles_tabBarClicked(int index);
     void on_clearRecentFilesMenu();
+
+    void on_actionSave_triggered();
+    void on_actionSave_As_triggered();
 
     void on_actionSelect_All_triggered();
 
@@ -56,9 +57,11 @@ private:
     {
         FileStatus()
         {
+            isNew = false;
             modified = false;
             path = QString("");
         }
+        bool isNew;
         bool modified;
         QString path;
     };

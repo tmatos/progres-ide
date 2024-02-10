@@ -115,7 +115,9 @@ void MainWindow::newVerilogFile()
     ui->tabFiles->setCurrentIndex(lastTabIndex);
 
     FileStatus fs;
+    fs.isNew = true;
     fs.modified = true;
+    fs.path = title;
     fileStatusList.append(fs);
 
     VerilogHighlighter *hlg = new VerilogHighlighter(fileEdit->document());
@@ -139,7 +141,12 @@ void MainWindow::openVerilogFile(QString filePath)
     {
         ui->consoleEdit->setPlainText(tr("Opening file: ") + filePath);
 
-        file.open(QFile::ReadWrite | QFile::Text); // TODO: check
+        auto success = file.open(QFile::ReadWrite | QFile::Text);
+
+        if(!success) {
+            ui->consoleEdit->appendPlainText(tr("Error loading file."));
+            return;
+        }
 
         if(config->value("recents/show").toBool())
         {
@@ -175,6 +182,7 @@ void MainWindow::openVerilogFile(QString filePath)
         Q_UNUSED(hlg);
 
         FileStatus fs;
+        fs.isNew = false;
         fs.modified = false;
         fs.path = filePath;
         fileStatusList.append(fs);
@@ -184,16 +192,38 @@ void MainWindow::openVerilogFile(QString filePath)
     }
 }
 
-void MainWindow::saveVerilogFileDialog()
+void MainWindow::on_actionSave_triggered()
 {
+    if(ui->tabFiles->count() == 0) {
+        return;
+    }
+
     auto i = ui->tabFiles->currentIndex();
 
+    ui->consoleEdit->appendPlainText("DEBUG: saving file on tab " + QString::number(i));
+
+    // TODO
 }
 
-void MainWindow::saveVerilogFileAsDialog()
+void MainWindow::on_actionSave_As_triggered()
 {
+    if(ui->tabFiles->count() == 0) {
+        return;
+    }
+
+    auto i = ui->tabFiles->currentIndex();
+
     QString filePath;
-    filePath = QFileDialog::getSaveFileName(this, tr("Open Verilog Code"), "", tr("Verilog files (*.v)"));
+    filePath = QFileDialog::getSaveFileName(this, tr("Save Verilog File As"), "", tr("Verilog files (*.v)"));
+
+    QFile file(filePath);
+
+    if(file.exists()) {
+        // TODO
+    }
+    else {
+        // TODO
+    }
 
     // TODO
 }
@@ -242,9 +272,14 @@ void MainWindow::simulationStart()
     args << dir;
     args << file;
 
-    process->start(simulator, args);
-
     ui->consoleEdit->appendPlainText("DEBUG: " + args[0] + "&" + args[1]);
+
+    process->start(simulator, args);
+    process->waitForFinished();
+    QString output(process->readAllStandardOutput());
+
+    ui->consoleEdit->appendPlainText("\n");
+    ui->consoleEdit->appendPlainText(output);
 }
 
 void MainWindow::on_tabFiles_tabCloseRequested(int index)
@@ -253,7 +288,7 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
 
     // TODO: cleanup
 
-    FileStatus fs = fileStatusList[index];
+    FileStatus fs = fileStatusList[index]; // FIXME
 
     if(fs.modified) {
         QMessageBox box;
