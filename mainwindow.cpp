@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QPlainTextEdit>
+#include <QTextStream>
 #include <QSettings>
 #include <QProcess>
 
@@ -47,6 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
         config->setValue("recents/max", 10);
         config->setValue("recents/list", empty);
     }
+
+    // below: the signal is not being found
+    //connect( ui->tabFiles->tabBar(), SIGNAL(tabMoved(int from, int to)), this, SLOT(on_tabMoved(int,int)) );
 
     ui->tabFiles->clear();
 }
@@ -88,6 +92,12 @@ void MainWindow::openRecentFile()
     if(action) {
         openVerilogFile(action->data().toString());
     }
+}
+
+void MainWindow::on_tabMoved(int from, int to)
+{
+    ui->consoleEdit->appendPlainText(tr("DEBUG: tab moved from ") + QString::number(from) + " to " + QString::number(to));
+
 }
 
 void MainWindow::findText(const QString &txt)
@@ -198,11 +208,29 @@ void MainWindow::on_actionSave_triggered()
         return;
     }
 
-    auto i = ui->tabFiles->currentIndex();
+    auto index = ui->tabFiles->currentIndex();
 
-    ui->consoleEdit->appendPlainText("DEBUG: saving file on tab " + QString::number(i));
+    ui->consoleEdit->appendPlainText("DEBUG: saving file on tab " + QString::number(index));
 
-    // TODO
+    QString tabTitle = ui->tabFiles->tabText(index);
+
+    FileStatus fs;
+
+    for (const FileStatus it : fileStatusList) {
+        if(it.path == tabTitle) {
+            fs = it;
+            break;
+        }
+    }
+
+    if(fs.modified) {
+        if(fs.isNew) {
+            saveNewFile(fs, index);
+        }
+        else {
+            // TODO
+        }
+    }
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -282,13 +310,48 @@ void MainWindow::simulationStart()
     ui->consoleEdit->appendPlainText(output);
 }
 
+bool MainWindow::saveNewFile(MainWindow::FileStatus &fs, const int index)
+{
+    QString newFilePath;
+    newFilePath = QFileDialog::getSaveFileName(this, tr("Saving a new file"), "", tr("Verilog files (*.v)"));
+    if(newFilePath.isEmpty()) {
+        ui->consoleEdit->appendPlainText(tr("Saving the file was canceled."));
+        return false;
+    }
+    if( !newFilePath.endsWith(".v") ) {
+        newFilePath += ".v";
+        // TODO: check case
+    }
+    QFile file(newFilePath);
+    if( file.open(QFile::WriteOnly | QFile::Text) ) {
+        QTextStream out(&file);
+        out << ( (QPlainTextEdit*) ui->tabFiles->widget(index) )->toPlainText();
+        fs.isNew = false;
+        fs.modified = false;
+        fs.path = newFilePath;
+        file.close();
+        ui->tabFiles->setTabText(index, newFilePath);
+        ui->consoleEdit->appendPlainText(tr("Success. New file was saved as \'") + newFilePath + "\'.");
+    }
+    else {
+        ui->consoleEdit->appendPlainText(tr("Error! Unable to save the file \'") + newFilePath + "\'.");
+        return false;
+    }
+    return true;
+}
+
 void MainWindow::on_tabFiles_tabCloseRequested(int index)
 {
-    // TODO: checks
+    QString tabTitle = ui->tabFiles->tabText(index);
 
-    // TODO: cleanup
+    FileStatus fs;
 
-    FileStatus fs = fileStatusList[index]; // FIXME
+    for (const FileStatus it : fileStatusList) {
+        if(it.path == tabTitle) {
+            fs = it;
+            break;
+        }
+    }
 
     if(fs.modified) {
         QMessageBox box;
@@ -300,18 +363,31 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
         auto response = box.exec();
 
         if(response == QMessageBox::Save) {
-            // TODO
+            if(fs.isNew) {
+                if( !saveNewFile(fs, index) ) {
+                    return;
+                }
+            }
+            else {
+                // TODO
+            }
         }
         else if(response == QMessageBox::Cancel) {
             return;
         }
-
-        // TODO: discard
     }
 
-    fileStatusList.removeAt(index);
+    //fileStatusList.removeOne(fs);
+    auto i = 0;
+    for (const FileStatus it : fileStatusList) {
+        if(it.path == tabTitle) {
+            fileStatusList.removeAt(i);
+            break;
+        }
+        i++;
+    }
 
-    // TODO: delete highlighter
+    // TODO: delete highlighter (memleak?)
 
     delete ui->tabFiles->widget(index); // NOTE: removeTab() doesn't free memory
 }

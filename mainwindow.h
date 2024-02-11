@@ -20,6 +20,22 @@ public:
     void openVerilogFile(QString filePath);
     void findText(const QString &txt);
 
+protected:
+    struct FileStatus
+    {
+        FileStatus()
+        {
+            isNew = false;
+            modified = false;
+            path = QString("");
+        }
+        bool isNew;
+        bool modified;
+        QString path;
+    };
+
+    bool saveNewFile(FileStatus &fs, const int index);
+
 protected slots:
     void newVerilogFile();
     void openVerilogFileDialog();
@@ -28,6 +44,8 @@ protected slots:
     void exitApp();
     void simulationStart();
     void openRecentFile();
+
+    void on_tabMoved(int from, int to);
 
 private slots:
     void on_tabFiles_tabCloseRequested(int index);
@@ -52,19 +70,6 @@ private:
     QList<QAction> recentFilesActionList;
 
     unsigned int newVerilogFileCount = 0;
-
-    struct FileStatus
-    {
-        FileStatus()
-        {
-            isNew = false;
-            modified = false;
-            path = QString("");
-        }
-        bool isNew;
-        bool modified;
-        QString path;
-    };
 
     QList<FileStatus> fileStatusList;
 
