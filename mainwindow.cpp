@@ -165,61 +165,59 @@ void MainWindow::openVerilogFile(QString filePath)
 {
     QFile file(filePath);
 
-    if(file.exists())
-    {
-        ui->consoleEdit->appendPlainText(tr("Opening file: ") + filePath);
-
-        auto success = file.open(QFile::ReadWrite | QFile::Text);
-
-        if(!success) {
-            ui->consoleEdit->appendPlainText(tr("Error loading file."));
-            return;
-        }
-
-        if(config->value("recents/show").toBool())
-        {
-            QStringList recentsList = config->value("recents/list").toStringList();
-            auto maxRecentFiles = config->value("recents/max").toInt();
-            if(recentsList.count() >= maxRecentFiles) {
-                recentsList.removeAt(0);
-            }
-
-            recentsList.append(filePath);
-
-            config->setValue("recents/list", recentsList);
-
-            //FIXME duplicate entries
-
-            updateRecentFilesList(recentsList, maxRecentFiles);
-        }
-
-        QPlainTextEdit *fileEdit = new QPlainTextEdit(0);
-
-        QFont codeFont("Monospace");
-        codeFont.setStyleHint(QFont::TypeWriter);
-        fileEdit->setFont(codeFont);
-
-        QString title(filePath);
-        ui->tabFiles->addTab(fileEdit, title);
-        ui->tabFiles->setCurrentIndex(ui->tabFiles->count()-1);
-
-        QString code = QString::fromUtf8(file.readAll());
-        fileEdit->setPlainText(code);
-
-        VerilogHighlighter *hlg = new VerilogHighlighter(fileEdit->document());
-        Q_UNUSED(hlg);
-
-        FileStatus fs;
-        fs.isNew = false;
-        fs.modified = false;
-        fs.path = filePath;
-        fileStatusList.append(fs);
-
-        connect( fileEdit, SIGNAL(textChanged()), this, SLOT(on_fileEdit_textChanged()) );
-    }
-    else {
+    if(!file.exists()) {
         ui->consoleEdit->appendPlainText(tr("Error loading file. Not found."));
+        return;
     }
+
+    ui->consoleEdit->appendPlainText(tr("Opening file: ") + filePath);
+
+    auto success = file.open(QFile::ReadWrite | QFile::Text);
+    if(!success) {
+        ui->consoleEdit->appendPlainText(tr("Error loading file."));
+        return;
+    }
+
+    if(config->value("recents/show").toBool())
+    {
+        QStringList recentsList = config->value("recents/list").toStringList();
+        auto maxRecentFiles = config->value("recents/max").toInt();
+        if(recentsList.count() >= maxRecentFiles) {
+            recentsList.removeAt(0);
+        }
+
+        recentsList.append(filePath);
+
+        config->setValue("recents/list", recentsList);
+
+        //FIXME duplicate entries
+
+        updateRecentFilesList(recentsList, maxRecentFiles);
+    }
+
+    QPlainTextEdit *fileEdit = new QPlainTextEdit(0);
+
+    QFont codeFont("Monospace");
+    codeFont.setStyleHint(QFont::TypeWriter);
+    fileEdit->setFont(codeFont);
+
+    QString title(filePath);
+    ui->tabFiles->addTab(fileEdit, title);
+    ui->tabFiles->setCurrentIndex(ui->tabFiles->count()-1);
+
+    QString code = QString::fromUtf8(file.readAll());
+    fileEdit->setPlainText(code);
+
+    VerilogHighlighter *hlg = new VerilogHighlighter(fileEdit->document());
+    Q_UNUSED(hlg);
+
+    FileStatus fs;
+    fs.isNew = false;
+    fs.modified = false;
+    fs.path = filePath;
+    fileStatusList.append(fs);
+
+    connect( fileEdit, SIGNAL(textChanged()), this, SLOT(on_fileEdit_textChanged()) );
 }
 
 void MainWindow::on_actionSave_triggered()
