@@ -1,3 +1,5 @@
+#include <QFileDialog>
+
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 
@@ -14,6 +16,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     ui->chkShowRecent->setChecked(config->value("recents/show").toBool());
     ui->boxMaxRecent->setValue(config->value("recents/max").toInt());
+
+    connect( ui->btnSelectSimExe, SIGNAL(clicked(bool)), this, SLOT(selectSimulatorExe()) );
 }
 
 SettingsDialog::~SettingsDialog()
@@ -31,4 +35,15 @@ void SettingsDialog::accept()
     config->setValue("recents/max", ui->boxMaxRecent->value());
 
     close();
+}
+
+void SettingsDialog::selectSimulatorExe()
+{
+    QString simPath = QFileDialog::getOpenFileName(this,
+                                                   tr("Select the simulator program"),
+                                                   "",
+                                                   tr("Executable files (*)"));
+    if(!simPath.isEmpty()) {
+        ui->edtSimulatorPath->setText(simPath);
+    }
 }

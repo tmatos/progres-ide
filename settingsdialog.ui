@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>500</width>
     <height>300</height>
    </rect>
   </property>
@@ -26,7 +26,14 @@
      <item row="0" column="2">
       <widget class="QLineEdit" name="edtSimulatorPath"/>
      </item>
-     <item row="2" column="1" colspan="2">
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btnSelectSimExe">
+       <property name="text">
+        <string>Select</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="3">
       <widget class="QFrame" name="frame">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>

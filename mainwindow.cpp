@@ -29,7 +29,10 @@ MainWindow::MainWindow(QWidget *parent) :
                                  tr("Simulator program is not defined"),
                                  tr("Please, select the simulator program in the next screen."));
 
-        QString simPath = QFileDialog::getOpenFileName(this, tr("Select the simulator program"), "", tr("Executable files (*)"));
+        QString simPath = QFileDialog::getOpenFileName(this,
+                                                       tr("Select the simulator program"),
+                                                       "",
+                                                       tr("Executable files (*)"));
         if(!simPath.isEmpty()) {
             config->setValue("simulator", simPath);
         }
@@ -292,37 +295,49 @@ void MainWindow::exitApp()
 
 void MainWindow::simulationStart()
 {
-    unsigned int n = ui->tabFiles->count();
+    auto n = ui->tabFiles->count();
 
     if(!n) {
         return;
     }
 
     if(config->value("simulator").toString().isEmpty()) {
-        QMessageBox::warning(this, tr("Simulator not set"), tr("The path to the simulator executable is not set."));
+        QMessageBox::warning(this,
+                             tr("Simulator not set"),
+                             tr("The path to the simulator executable is not set."));
         showSettingsDialog();
         return;
     }
 
     // FIXME
 
+    QString simulatorPath = config->value("simulator").toString();
+    QFile simulatorExe(simulatorPath);
+
+    if(!simulatorExe.exists()) {
+        QMessageBox::warning(this,
+                             tr("Fatal error"),
+                             tr("Could not find the simulator: \'") + simulatorPath + "\'.");
+        return;
+    }
+
     QProcess *process = new QProcess(this);
-    QString simulator = config->value("simulator").toString();
     QString dir = ".";
 
     QString file = ui->tabFiles->tabText(ui->tabFiles->currentIndex());
 
     QStringList args;
-    args << dir;
+    //args << dir;
     args << file;
 
-    ui->consoleEdit->appendPlainText("DEBUG: " + args[0] + "&" + args[1]);
+    // TODO pass input files
 
-    process->start(simulator, args);
+    ui->consoleEdit->appendPlainText("EXECUTANDO: " + simulatorPath + " " + args[0]);
+
+    process->start(simulatorPath, args);
     process->waitForFinished();
     QString output(process->readAllStandardOutput());
 
-    ui->consoleEdit->appendPlainText("\n");
     ui->consoleEdit->appendPlainText(output);
 }
 

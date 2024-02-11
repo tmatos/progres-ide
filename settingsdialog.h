@@ -18,6 +18,7 @@ public:
 
 protected slots:
     void accept();
+    void selectSimulatorExe();
 
 private:
     Ui::SettingsDialog *ui;
