@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,7 +29,8 @@ SOURCES += \
     settingsdialog.cpp \
     veriloghighlighter.cpp \
     signalview.cpp \
-    finddialog.cpp
+    finddialog.cpp \
+    tests/mainwindowtest.cpp
 
 HEADERS += \
         mainwindow.h \
