@@ -35,6 +35,7 @@ protected:
     };
 
     bool saveNewFile(FileStatus &fs, const int index);
+    bool saveExistingFile(FileStatus &fs, const int index);
 
 protected slots:
     void newVerilogFile();
@@ -44,6 +45,7 @@ protected slots:
     void exitApp();
     void simulationStart();
     void openRecentFile();
+    void on_fileEdit_textChanged();
 
     void on_tabMoved(int from, int to);
 

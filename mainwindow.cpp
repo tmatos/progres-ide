@@ -94,6 +94,21 @@ void MainWindow::openRecentFile()
     }
 }
 
+void MainWindow::on_fileEdit_textChanged()
+{
+    auto index = ui->tabFiles->currentIndex();
+    auto tabTitle = ui->tabFiles->tabText(index);
+
+    for (FileStatus &it : fileStatusList) {
+        if(it.path == tabTitle) {
+            it.modified = true;
+            break;
+        }
+    }
+
+    // TODO subclass the widget, in near future
+}
+
 void MainWindow::on_tabMoved(int from, int to)
 {
     ui->consoleEdit->appendPlainText(tr("DEBUG: tab moved from ") + QString::number(from) + " to " + QString::number(to));
@@ -149,7 +164,7 @@ void MainWindow::openVerilogFile(QString filePath)
 
     if(file.exists())
     {
-        ui->consoleEdit->setPlainText(tr("Opening file: ") + filePath);
+        ui->consoleEdit->appendPlainText(tr("Opening file: ") + filePath);
 
         auto success = file.open(QFile::ReadWrite | QFile::Text);
 
@@ -196,6 +211,8 @@ void MainWindow::openVerilogFile(QString filePath)
         fs.modified = false;
         fs.path = filePath;
         fileStatusList.append(fs);
+
+        connect( fileEdit, SIGNAL(textChanged()), this, SLOT(on_fileEdit_textChanged()) );
     }
     else {
         ui->consoleEdit->appendPlainText(tr("Error loading file. Not found."));
@@ -213,10 +230,9 @@ void MainWindow::on_actionSave_triggered()
     ui->consoleEdit->appendPlainText("DEBUG: saving file on tab " + QString::number(index));
 
     QString tabTitle = ui->tabFiles->tabText(index);
+    FileStatus &fs = fileStatusList.first();
 
-    FileStatus fs;
-
-    for (const FileStatus it : fileStatusList) {
+    for (FileStatus &it : fileStatusList) {
         if(it.path == tabTitle) {
             fs = it;
             break;
@@ -228,7 +244,7 @@ void MainWindow::on_actionSave_triggered()
             saveNewFile(fs, index);
         }
         else {
-            // TODO
+            saveExistingFile(fs, index);
         }
     }
 }
@@ -340,13 +356,32 @@ bool MainWindow::saveNewFile(MainWindow::FileStatus &fs, const int index)
     return true;
 }
 
+bool MainWindow::saveExistingFile(MainWindow::FileStatus &fs, const int index)
+{
+    QString filePath = fs.path;
+    QFile file(filePath);
+
+    if( !file.open(QFile::ReadWrite | QFile::Text) ) {
+        ui->consoleEdit->appendPlainText(tr("Error! Unable to save the file \'") + filePath + "\'.");
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << ( (QPlainTextEdit*) ui->tabFiles->widget(index) )->toPlainText();
+    fs.modified = false;
+    file.close();
+    ui->consoleEdit->appendPlainText(tr("Success. File \'") + filePath + "\' was saved.");
+
+    return true;
+}
+
 void MainWindow::on_tabFiles_tabCloseRequested(int index)
 {
     QString tabTitle = ui->tabFiles->tabText(index);
 
-    FileStatus fs;
+    FileStatus &fs = fileStatusList.first();
 
-    for (const FileStatus it : fileStatusList) {
+    for (FileStatus &it : fileStatusList) {
         if(it.path == tabTitle) {
             fs = it;
             break;
@@ -367,9 +402,10 @@ void MainWindow::on_tabFiles_tabCloseRequested(int index)
                 if( !saveNewFile(fs, index) ) {
                     return;
                 }
+                // TODO: add created file to recents on menu
             }
             else {
-                // TODO
+                saveExistingFile(fs, index);
             }
         }
         else if(response == QMessageBox::Cancel) {
