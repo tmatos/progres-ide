@@ -105,6 +105,7 @@ void MainWindow::on_fileEdit_textChanged()
     for (FileStatus &it : fileStatusList) {
         if(it.path == tabTitle) {
             it.modified = true;
+            ui->consoleEdit->appendPlainText(tr("DEBUG: textChanged, file: ") + it.path + tr(" tab: ") + QString::number(index) );
             break;
         }
     }
@@ -150,6 +151,8 @@ void MainWindow::newVerilogFile()
 
     VerilogHighlighter *hlg = new VerilogHighlighter(fileEdit->document());
     Q_UNUSED(hlg);
+
+    connect( fileEdit, SIGNAL(textChanged()), this, SLOT(on_fileEdit_textChanged()) );
 }
 
 void MainWindow::openVerilogFileDialog()
